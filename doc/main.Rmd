@@ -1,5 +1,11 @@
 ---
-title: 'Optical character recognition (OCR)'
+title: 'Group 10: Optical character recognition (OCR) + Error Detection + Error Correction'
+author: 
+- Seungwook Han
+- Hongye Jiang
+- Jingyue Li
+- Xinzhu Wang
+- Xiaoxi Zhao
 output: 
   html_document:
     toc: true
@@ -10,8 +16,6 @@ output:
     number_sections: true
     code_folding: hide
 ---
-
-Jing Wu
 
 GU4243/GR5243: Applied Data Science
 
@@ -75,6 +79,8 @@ file_name_vec <- list.files("../data/ground_truth") #100 files in total
 Although we have processed the Tesseract OCR and save the output txt files in the `data` folder, we include this chunk of code in order to make clear the whole pipeline to you.
 
 ```{r, eval=FALSE}
+# This code was used to generate the Tesseract txt files, but will not be necessary for the purpose of the project since the txt files are provided.
+"""
 for(i in c(1:length(file_name_vec))){
   current_file_name <- sub(".txt","",file_name_vec[i])
   ## png folder is not provided on github (the code is only for demonstration purpose)
@@ -87,6 +93,7 @@ for(i in c(1:length(file_name_vec))){
   ### save tesseract text file
   writeLines(clean_tesseract_txt, paste("../data/tesseract/",current_file_name,".txt",sep=""))
 }
+"""
 ```
 
 # Step 3 - Error detection
@@ -115,7 +122,7 @@ In this statercode, we implement the first three rules in the first paper -- rul
 current_file_name <- sub(".txt","",file_name_vec[5])
 
 ## read the ground truth text
-current_ground_truth_txt <- readLines(paste("../data/ground_truth/",current_file_name,".txt",sep=""), warn=FALSE)
+current_ground_truth_txt <-  readLines(paste("../data/ground_truth/",current_file_name,".txt",sep=""), warn=FALSE)
 
 ## read the tesseract text
 current_tesseract_txt <- readLines(paste("../data/tesseract/",current_file_name,".txt",sep=""), warn=FALSE)
