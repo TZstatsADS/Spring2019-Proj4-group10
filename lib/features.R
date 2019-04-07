@@ -93,3 +93,24 @@ feature9<- function(word){
   non_alnum<-str_count(trim_word,"[^[:alnum:]]")
   return(ifelse(non_alnum>=2,1,0))
 }
+
+most_freq_sym <- function(word) {
+  word_split <- strsplit(word, "")[[1]]
+  word_table <- table(word_split)  
+  max_sym <- word_table[which.max(word_table)]
+  
+  feature <- 0
+  if (max_sym >= 3) {
+    feature <- max_sym / str_length(word)
+  }
+  
+  return(feature);
+}
+
+non_alpha_sym <- function(word) {
+  l_alpha <- length(grep("[[:alnum:]=\\.]", strsplit(word,"")[[1]]))
+  l <- str_length(word)
+  l_nonalpha <- l - l_alpha
+  
+  return(ifelse(l_alpha == 0, 0, l_nonalpha / l_alpha))
+}
