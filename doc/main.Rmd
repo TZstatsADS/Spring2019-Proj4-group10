@@ -71,6 +71,7 @@ if (!require("pacman")) {
 
 pacman::p_load(knitr, readr, stringr, tesseract, vecsets)
 source('../lib/ifCleanToken.R')
+load('../output/bigram.RData')
 file_name_vec <- list.files("../data/ground_truth") #100 files in total
 ```
 

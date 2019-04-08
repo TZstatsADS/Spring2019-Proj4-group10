@@ -1,0 +1,7 @@
+load("/Users/yeyejiang/Documents/GitHub/Spring2019-Proj4-group10/output/bigram.RData")
+a
+load("/Users/yeyejiang/Documents/GitHub/Spring2019-Proj4-group10/output/bigram.RData")
+bb
+load("/Users/yeyejiang/Documents/GitHub/Spring2019-Proj4-group10/output/bigram.RData")
+bigramtable
+bigramtable['ab']

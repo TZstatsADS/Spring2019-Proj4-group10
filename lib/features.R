@@ -1,8 +1,12 @@
 if (!require("stringr")) {
   install.packages("stringr")
 }
+if (!require("quanteda")) {
+  install.packages("quanteda")
+}
 
 library(stringr)
+library(quanteda)
 
 feature1 <- function(word) {
   return(str_length(word))
@@ -10,13 +14,14 @@ feature1 <- function(word) {
 
 
 feature2 <- function(word) {
-  vowels <- c("a", "e", "i", "o", "u")
+  # vowels <- c("a", "e", "i", "o", "u")
+  vowels <- c("a", "e", "i", "o", "u", "v")
   
   word_lower <- tolower(strsplit(word, "")[[1]])
   word_freq <- word_lower[word_lower %in% letters]
   word_table <- table(word_freq)  
   
-  print(word_table)
+  # print(word_table)
   l <- sum(word_table)
   v <- sum(word_table[vowels], na.rm=TRUE)
   c <- l - v
@@ -29,7 +34,8 @@ feature2 <- function(word) {
 }
 
 feature3 <- function(word) {
-  s<-length(grep("[^[:alnum:]=\\.]", strsplit(word,"")[[1]]))
+  # s<-length(grep("[^[:alnum:]=\\.]", strsplit(word,"")[[1]]))
+  s <- length(grep("[^[:alnum:]]", strsplit(word,"")[[1]]))
   l<-str_length(word)
   return(c(s,s/l))
 }
@@ -83,7 +89,8 @@ feature7<- function(word){
 }
 
 feature8<- function(word){
-  consec_con<-str_count(word,"[bcdfghjklmnpqrstvxzwyBCDFGHJKLMNPQRSTVXZWY]{6,}")
+  # consec_con<-str_count(word,"[bcdfghjklmnpqrstvxzwyBCDFGHJKLMNPQRSTVXZWY]{6,}")  #delete v
+  consec_con<-str_count(word,"[bcdfghjklmnpqrstxzwyBCDFGHJKLMNPQRSTXZWY]{6,}")
   return(ifelse(consec_con>=1,1,0))
 }
 
@@ -94,23 +101,21 @@ feature9<- function(word){
   return(ifelse(non_alnum>=2,1,0))
 }
 
-most_freq_sym <- function(word) {
-  word_split <- strsplit(word, "")[[1]]
-  word_table <- table(word_split)  
-  max_sym <- word_table[which.max(word_table)]
-  
-  feature <- 0
-  if (max_sym >= 3) {
-    feature <- max_sym / str_length(word)
-  }
-  
-  return(feature);
+feature10bigram <- function(word){
+  bigramletters <- tolower(char_ngrams(strsplit(word,"")[[1]],2,concatenator = ""))
+  sum(bigramtable[bigramletters], na.rm = TRUE)/length(bigramletters)/1000
 }
 
-non_alpha_sym <- function(word) {
-  l_alpha <- length(grep("[[:alnum:]=\\.]", strsplit(word,"")[[1]]))
-  l <- str_length(word)
-  l_nonalpha <- l - l_alpha
-  
-  return(ifelse(l_alpha == 0, 0, l_nonalpha / l_alpha))
+feature11MFS <- function(word){
+  l <- nchar(word)
+  split <- strsplit(word, "")[[1]]
+  i <- max(table(split))
+  ifelse(i>=3, i/l, 0)
+}
+
+feature12NAS <- function(word){
+  l1 <- length(grep("[[:alpha:]]", strsplit(word,"")[[1]]))
+  l <- nchar(word)
+  l2 <- l-l1
+  return(ifelse(l1 != 0, l1/l2, 0))
 }
