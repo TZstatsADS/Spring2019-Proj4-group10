@@ -69,9 +69,13 @@ if (!require("pacman")) {
   install_github("trinker/pacman")
 }
 
+library(e1071)
+
 pacman::p_load(knitr, readr, stringr, tesseract, vecsets)
 source('../lib/ifCleanToken.R')
+source('../lib/features.R')
 load('../output/bigram.RData')
+load('../output/datamatrix.RData')
 file_name_vec <- list.files("../data/ground_truth") #100 files in total
 ```
 
@@ -118,21 +122,79 @@ The referenced papers are:
 
 In this statercode, we implement the first three rules in the first paper -- rule based techniques, as an example.
 
-```{r}
-### only process one of the files in the folder as an example, in your project, you need to use all the files
-current_file_name <- sub(".txt","",file_name_vec[5])
+```{r, warning=FALSE}
+"""
+datamatrix = c()
+for(j in c(1:length(file_name_vec))){
+#for(j in c(1:2)){
+  current_file_name <- sub(".txt","",file_name_vec[j])
+  ## read the ground truth text
+  current_ground_truth_txt <- readLines(paste("../data/ground_truth/",current_file_name,".txt",sep=""), warn=FALSE)
+  ## read the tesseract text
+  current_tesseract_txt <- readLines(paste("../data/tesseract/",current_file_name,".txt",sep=""), warn=FALSE)
+  
+  #split ground truth text
+  truth_split <- str_split(current_ground_truth_txt, " ")
+  tru_split <- unlist(truth_split)
+  truth_lengthperrow <- sapply(truth_split, length)
+  truth_rowindex <- rep(1:length(current_ground_truth_txt), truth_lengthperrow)
+  #truth_table <- cbind(word = unlist(truth_split), truth_rowindex)
+  
+  #split tesseract text
+  tesseract_split <- str_split(current_tesseract_txt, " ")
+  tes_split <- unlist(tesseract_split)
+  tes_lengthperrow <- sapply(tesseract_split, length)
+  tes_row <- rep(1:length(current_tesseract_txt), tes_lengthperrow)
+  #tesseract_table <- cbind(word = tes_split, tes_row)
+  
+  #get position of correct ones
+  res = c()
+  pos = rep(list(0), length(tes_split))
+  for (i in 1:length(tes_split)){
+    res[i] <- ifelse(tes_split[i] %in% tru_split,1,0)
+    pos[[i]] <- if(res[i]==1) which(tru_split==tes_split[i]) else 0
+  }
+  truthpos = c(0)
+  for (i in 1:length(tes_split)){
+    truthpos[i+1] <- ifelse(sum((pos[[i]]>truthpos[i])&(pos[[i]] <= (i+5)))>0,
+                          pos[[i]][min(which(pos[[i]]>truthpos[i]))],
+                          truthpos[i])
+  }
+  truthpos <- truthpos[-1]
+  truthpos[c(0, diff(truthpos))==0] <- 0
+  
+  #1: correct, 0: wrong
+  ifwordcorrect <- rep(1,length(tes_split))
+  ifwordcorrect[truthpos==0] <- 0
+  #add row index
+  truth_row <- unlist(sapply(1:length(tes_split), function(x) ifelse(truthpos[x]==0,0,truth_rowindex[truthpos[x]])))
 
-## read the ground truth text
-current_ground_truth_txt <-  readLines(paste("../data/ground_truth/",current_file_name,".txt",sep=""), warn=FALSE)
+  #create matrix
+  ifcorrectmatrix <- cbind(tes_row, truthpos, truth_row, ifwordcorrect)
+  rownames(ifcorrectmatrix) <- tes_split
+  
+  #add features
+  feat <- do.call(rbind, lapply(tes_split, features))
+  # datamatrix[[j]] <- cbind(ifcorrectmatrix, feat)
+  tempmatrix <- cbind(ifcorrectmatrix, feat, j)
+  datamatrix <- rbind(datamatrix, tempmatrix)
+  
+# as.numeric(datamatrix[datamatrix[,'ifwordcorrect']==0,][,'f10'])%>%mean()
+# 6.290125
+# as.numeric(datamatrix[datamatrix[,'ifwordcorrect']==1,][,'f10'])%>%mean()
+# 12.1335
+# apply(is.na(dm),2,sum)
+}
 
-## read the tesseract text
-current_tesseract_txt <- readLines(paste("../data/tesseract/",current_file_name,".txt",sep=""), warn=FALSE)
-clean_tesseract_txt <- paste(current_tesseract_txt, collapse = " ")
-
-## detect tesseract word error
-tesseract_vec <- str_split(clean_tesseract_txt," ")[[1]] #1124 tokens
-tesseract_if_clean <- unlist(lapply(tesseract_vec,ifCleanToken)) # source code of ifCleanToken in in lib folder
+#save(datamatrix, file = '../output/datamatrix.RData')
+"""
 ```
+
+SVM
+```{r}
+head(datamatrix)
+```
+
 
 # Step 4 - Error correction
 
