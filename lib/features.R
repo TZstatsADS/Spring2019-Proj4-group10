@@ -14,7 +14,7 @@ features <- function(word){
   
   #feature2
   word_lower <- tolower(strsplit(word, "")[[1]])
-  vowels <- '[aeiouv]'
+  vowels <- '[aeiou]'
   consonants <- '[bcdfghjklmnpqrstvxzwy]'
   v <- str_count(word, vowels)
   c <- str_count(word, consonants)
@@ -24,11 +24,9 @@ features <- function(word){
 
   #feature3 
   s <- length(grep("[^[:alnum:]]", strsplit(word,"")[[1]]))
-  l <- str_length(word)
 
   #feature4
   d<-length(grep("[0-9]", strsplit(word,"")[[1]]))
-  l<-str_length(word)
 
   #feature5
   low<-length(grep("[a-z]", strsplit(word,"")[[1]]))
@@ -44,11 +42,10 @@ features <- function(word){
   f7 <- ifelse(k>l_alpha,1,0)
 
   #feature8
-  consec_con<-str_count(word,"[bcdfghjklmnpqrstxzwyBCDFGHJKLMNPQRSTXZWY]{6,}")
+  consec_con<-str_count(word,"[bcdfghjklmnpqrstvxzwyBCDFGHJKLMNPQRSTVXZWY]{6,}")
   f8 <- ifelse(consec_con>=1,1,0)
 
   #feature9
-  l<-nchar(word)
   trim_word <- substr(word,2,(l-1))
   non_alnum<-str_count(trim_word,"[^[:alnum:]]")
   f9 <- ifelse(non_alnum>=2,1,0)
@@ -64,14 +61,13 @@ features <- function(word){
 
   #feature12NAS
   l1 <- length(grep("[[:alpha:]]", strsplit(word,"")[[1]]))
-  l <- nchar(word)
   l2 <- l-l1
   f12 <- ifelse(l1 != 0, l2/l1, 0)
 
-return(c(l=l, 
+return(c(l=l,v=v, c=c,
          v_l = q1, c_l = q2, v_c = q3,
-         s_l = s/l,
-         d_l = d/l,
-         low_l = low/l, upp_l = upp/l,
+         s=s, s_l = s/l,
+         d=d, d_l = d/l,
+         low = low, upp = upp, low_l = low/l, upp_l = upp/l,
          f6=f6, f7=f7, f8=f8, f9=f9, f10=f10, f11=f11, f12=f12))
 }
