@@ -62,7 +62,7 @@ features <- function(word){
   #feature12NAS
   l1 <- length(grep("[[:alpha:]]", strsplit(word,"")[[1]]))
   l2 <- l-l1
-  f12 <- ifelse(l1 != 0, l2/l1, 0)
+  f12 <- ifelse(l1 != 0, l2/l1, l*2)
 
 return(c(l=l,v=v, c=c,
          v_l = q1, c_l = q2, v_c = q3,
