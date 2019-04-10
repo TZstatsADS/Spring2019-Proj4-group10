@@ -73,9 +73,7 @@ library(e1071)
 
 pacman::p_load(knitr, readr, stringr, tesseract, vecsets)
 source('../lib/ifCleanToken.R')
-source('../lib/features.R')
 load('../output/bigram.RData')
-load('../output/datamatrix.RData')
 file_name_vec <- list.files("../data/ground_truth") #100 files in total
 ```
 
@@ -123,7 +121,8 @@ The referenced papers are:
 In this statercode, we implement the first three rules in the first paper -- rule based techniques, as an example.
 
 ```{r, warning=FALSE}
-"""
+
+source('../lib/features.R')
 datamatrix = c()
 for(j in c(1:length(file_name_vec))){
 #for(j in c(1:2)){
@@ -160,13 +159,8 @@ for(j in c(1:length(file_name_vec))){
   for (i in 1:length(tes_split)){
     nextnonzero1 <- min(which(tempindex == tempindex[i]+1))
     nextnonzero2 <- min(which(tempindex == tempindex[i]+2))
-    nextnonzero3 <- min(which(tempindex == tempindex[i]+3))
-    nextnonzero4 <- min(which(tempindex == tempindex[i]+4))
     a <- pos[[nextnonzero1]]
     b <- pos[[nextnonzero2]]
-    c <- pos[[nextnonzero3]]
-    d <- pos[[nextnonzero4]]
-
     # truthpos[i+1] <- ifelse(sum((pos[[i]]>truthpos[i])&(pos[[i]] <= (i+5)))>0,
     truthpos[i+1] <- ifelse(sum((pos[[i]]>truthpos[i]) &
                                   pos[[i]]<= min(a[a>truthpos[i]]) & pos[[i]]<= min(b[b>truthpos[i]])
@@ -196,19 +190,20 @@ for(j in c(1:length(file_name_vec))){
   datamatrix <- rbind(datamatrix, tempmatrix)
   
 # as.numeric(datamatrix[datamatrix[,'ifwordcorrect']==0,][,'f10'])%>%mean()
-# 6.414072
+# 0.6414072
 # as.numeric(datamatrix[datamatrix[,'ifwordcorrect']==1,][,'f10'])%>%mean()
-# 12.13309
+# 1.213309
 # dm <- data.frame(datamatrix)
 # apply(is.na(dm),2,sum)
 }
 
 #save(datamatrix, file = '../output/datamatrix.RData')
-"""
+
 ```
 
 SVM
 ```{r}
+load('../output/datamatrix.RData')
 head(datamatrix)
 ```
 
