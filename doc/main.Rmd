@@ -123,7 +123,7 @@ The referenced papers are:
 In this statercode, we implement the first three rules in the first paper -- rule based techniques, as an example.
 
 ```{r, warning=FALSE}
-"""
+"
 datamatrix = c()
 for(j in c(1:length(file_name_vec))){
 #for(j in c(1:2)){
@@ -154,9 +154,24 @@ for(j in c(1:length(file_name_vec))){
     res[i] <- ifelse(tes_split[i] %in% tru_split,1,0)
     pos[[i]] <- if(res[i]==1) which(tru_split==tes_split[i]) else 0
   }
-  truthpos = c(0)
+  tempindex <- cumsum(res)
+
+  truthpos <- c(0)
   for (i in 1:length(tes_split)){
-    truthpos[i+1] <- ifelse(sum((pos[[i]]>truthpos[i])&(pos[[i]] <= (i+5)))>0,
+    nextnonzero1 <- min(which(tempindex == tempindex[i]+1))
+    nextnonzero2 <- min(which(tempindex == tempindex[i]+2))
+    nextnonzero3 <- min(which(tempindex == tempindex[i]+3))
+    nextnonzero4 <- min(which(tempindex == tempindex[i]+4))
+    a <- pos[[nextnonzero1]]
+    b <- pos[[nextnonzero2]]
+    c <- pos[[nextnonzero3]]
+    d <- pos[[nextnonzero4]]
+
+    # truthpos[i+1] <- ifelse(sum((pos[[i]]>truthpos[i])&(pos[[i]] <= (i+5)))>0,
+    truthpos[i+1] <- ifelse(sum((pos[[i]]>truthpos[i]) &
+                                  pos[[i]]<= min(a[a>truthpos[i]]) & pos[[i]]<= min(b[b>truthpos[i]])
+                                )>0,
+
                           pos[[i]][min(which(pos[[i]]>truthpos[i]))],
                           truthpos[i])
   }
@@ -170,7 +185,8 @@ for(j in c(1:length(file_name_vec))){
   truth_row <- unlist(sapply(1:length(tes_split), function(x) ifelse(truthpos[x]==0,0,truth_rowindex[truthpos[x]])))
 
   #create matrix
-  ifcorrectmatrix <- cbind(tes_row, truthpos, truth_row, ifwordcorrect)
+  index <- 1:length(truth_row)
+  ifcorrectmatrix <- cbind(index, tes_row, truthpos, truth_row, ifwordcorrect)
   rownames(ifcorrectmatrix) <- tes_split
   
   #add features
@@ -180,9 +196,10 @@ for(j in c(1:length(file_name_vec))){
   datamatrix <- rbind(datamatrix, tempmatrix)
   
 # as.numeric(datamatrix[datamatrix[,'ifwordcorrect']==0,][,'f10'])%>%mean()
-# 6.290125
+# 6.414072
 # as.numeric(datamatrix[datamatrix[,'ifwordcorrect']==1,][,'f10'])%>%mean()
-# 12.1335
+# 12.13309
+# dm <- data.frame(datamatrix)
 # apply(is.na(dm),2,sum)
 }
 
