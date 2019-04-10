@@ -20,7 +20,7 @@ features <- function(word){
   c <- str_count(word, consonants)
   q1 <- v / l
   q2 <- c / l
-  q3 <- ifelse(c != 0, v/c, 0)
+  q3 <- ifelse(c != 0, v/c, 2*l)
 
   #feature3 
   s <- length(grep("[^[:alnum:]]", strsplit(word,"")[[1]]))
@@ -52,7 +52,7 @@ features <- function(word){
 
   #feature10bigram
   bigramletters <- tolower(char_ngrams(strsplit(word,"")[[1]],2,concatenator = ""))
-  f10 <- ifelse(l>=2, sum(bigramtable[bigramletters], na.rm = TRUE)/length(bigramletters)/1000, 0)
+  f10 <- ifelse(l>=2, sum(bigramtable[bigramletters], na.rm = TRUE)/length(bigramletters)/10000, 0)
 
   #feature11MFS
   split <- strsplit(word, "")[[1]]
@@ -62,7 +62,7 @@ features <- function(word){
   #feature12NAS
   l1 <- length(grep("[[:alpha:]]", strsplit(word,"")[[1]]))
   l2 <- l-l1
-  f12 <- ifelse(l1 != 0, l2/l1, 0)
+  f12 <- ifelse(l1 != 0, l2/l1, l*2)
 
 return(c(l=l,v=v, c=c,
          v_l = q1, c_l = q2, v_c = q3,
