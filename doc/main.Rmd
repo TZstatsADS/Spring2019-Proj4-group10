@@ -205,6 +205,23 @@ SVM
 ```{r}
 load('../output/datamatrix.RData')
 head(datamatrix)
+train_mat<-as.data.frame(datamatrix[,c(-1,-2,-3,-4,-27)])
+train_mat$ifwordcorrect<-factor(train_mat$ifwordcorrect)
+
+library(kernlab)
+library(caret)
+ctrl = trainControl(method = "cv", number =  5, 
+                    summaryFunction = twoClassSummary,
+                    classProbs = TRUE, savePredictions = TRUE)
+svm.fit<-train(ifwordcorrect~.,data=train_mat,method="svmRadial",metric="ROC",trControl=ctrl) 
+
+svm.model <- svm(ifwordcorrect ~ ., data = train_mat, cost = 1, gamma = 1)
+svm.pred <- predict(svm.model.3, train_mat[,-1])
+accuracy<- mean(svm.pred==train_mat$ifwordcorrect)
+save(svm.model, file = "../output/svm.model.best.rda")
+prederror <- as.data.frame(datamatrix)
+prederror$predifwordcorrect<-svm.pred
+save(prederror, file = '../output/prederror.RData')
 ```
 
 
