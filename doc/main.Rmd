@@ -218,7 +218,8 @@ svm.fit<-train(ifwordcorrect~.,data=train_mat,method="svmRadial",metric="ROC",tr
 svm.model <- svm(ifwordcorrect ~ ., data = train_mat, cost = 1, gamma = 1)
 svm.pred <- predict(svm.model.3, train_mat[,-1])
 accuracy<- mean(svm.pred==train_mat$ifwordcorrect)
-save(svm.model, file = "../output/svm.model.best.rda")
+save(svm.model, file = "../output/svm.model.rda")
+save(svm.pred, file = "../output/svm.model.pred.rda")
 prederror <- as.data.frame(datamatrix)
 prederror$predifwordcorrect<-svm.pred
 save(prederror, file = '../output/prederror.RData')
