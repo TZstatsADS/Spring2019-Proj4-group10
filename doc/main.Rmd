@@ -121,7 +121,6 @@ The referenced papers are:
 In this statercode, we implement the first three rules in the first paper -- rule based techniques, as an example.
 
 ```{r, warning=FALSE}
-
 source('../lib/features.R')
 datamatrix = c()
 for(j in c(1:length(file_name_vec))){
@@ -203,26 +202,26 @@ for(j in c(1:length(file_name_vec))){
 
 SVM
 ```{r}
+#see the svm.R
+#accuracy of SVM model
 load('../output/datamatrix.RData')
-head(datamatrix)
 train_mat<-as.data.frame(datamatrix[,c(-1,-2,-3,-4,-27)])
 train_mat$ifwordcorrect<-factor(train_mat$ifwordcorrect)
-
-library(kernlab)
+#split the dataset into training and test data 
+set.seed(1)
+s<-sample(1:2,nrow(train_mat),prob=c(0.8,0.2),replace=T)
+trainset<-train_mat[s==1,]
+testset<-train_mat[s==2,]
+#report training accuracy
+load("../output/svm.best.rda")
+load("../output/predvalue.rda")
+mean(trainset$ifwordcorrect==predvalue)
+#report training confusion matrix
 library(caret)
-ctrl = trainControl(method = "cv", number =  5, 
-                    summaryFunction = twoClassSummary,
-                    classProbs = TRUE, savePredictions = TRUE)
-svm.fit<-train(ifwordcorrect~.,data=train_mat,method="svmRadial",metric="ROC",trControl=ctrl) 
-
-svm.model <- svm(ifwordcorrect ~ ., data = train_mat, cost = 1, gamma = 1)
-svm.pred <- predict(svm.model.3, train_mat[,-1])
-accuracy<- mean(svm.pred==train_mat$ifwordcorrect)
-save(svm.model, file = "../output/svm.model.rda")
-save(svm.pred, file = "../output/svm.model.pred.rda")
-prederror <- as.data.frame(datamatrix)
-prederror$predifwordcorrect<-svm.pred
-save(prederror, file = '../output/prederror.RData')
+confusionMatrix(data=predvalue,reference=trainset$ifwordcorrect)
+#retrain the svm on the whole dataset
+load("../output/svm.model.rda")
+load("../output/svm.model.pred.rda")
 ```
 
 
