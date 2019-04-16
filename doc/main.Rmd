@@ -127,7 +127,6 @@ In this statercode, we implement the first three rules in the first paper -- rul
 #see the svm.R
 #performance of SVM model
 load('../output/datamatrix.RData')
-
 #split the dataset into training and test data 
 set.seed(1)
 #head(datamatrix)
@@ -138,7 +137,6 @@ datamatrix<-as.data.frame(datamatrix)
 datamatrix$ifwordcorrect<-factor(datamatrix$ifwordcorrect)
 trainset<-as.data.frame(datamatrix[datamatrix$j %in% train.index,c(-1,-2,-3,-4,-27)])
 testset<-as.data.frame(datamatrix[datamatrix$j %in% test.index,c(-1,-2,-3,-4,-27)])
-
 #report training accuracy
 load("../output/svm.best.rda")
 load("../output/predvalue.rda")
@@ -208,18 +206,18 @@ Here, we only finished the **word level evaluation** criterions, you are require
 ```{r, warning=FALSE}
 library(tidyr)
 truth <- c()
-for(i in c(1:length(file_name_vec))){
+# Collecting ground truth vector
+for(i in test.index){
   inputtxt <- readLines(paste("../data/ground_truth/",file_name_vec[i],sep=""), warn=FALSE, encoding = 'UTF-8')
   truth <- c(truth, inputtxt)
 }
-#head(truth,15)
+#head(truth, 5)
 ground_truth_vec <- unlist(strsplit(tolower(truth), " "))
+
 load("../output/svm.model.pred.rda")
-tesseract_vec <-rownames(datamatrix)#298728
-tesseract_if_clean<-svm.pred#298728
-tesseract_if_error<-ifelse(tesseract_if_clean==1,F,T)
-#combine the true words and the corrected words 
-tesseract_vec_clean <- c(tesseract_vec[!tesseract_if_error],tesseract_correct_vec)
+
+# Collecting tesseract vector
+tesseract_vec <- rownames(testset)
 
 #replace those wrong words
 # length(rownames(datamatrix))
@@ -271,10 +269,6 @@ for (word in ground_truth_vec) {
     ground_char_count <- ground_char_count + char_table
   }
 }
-
-
-
-
 
 
 OCR_performance_table <- data.frame("Tesseract" = rep(NA,4),
