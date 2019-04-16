@@ -189,9 +189,7 @@ test_if_clean<-predvalue
 test_if_error<-ifelse(test_if_clean==1,F,T)
 #extract error terms
 test_error_vec <- test_vec[test_if_error]
-
 load("../output/error_correction.RData")
-
 ```
 
 # Step 5 - Performance measure
