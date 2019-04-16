@@ -67,9 +67,9 @@ if (!require("caret")) install.packages("devtools")
 if (!require("pacman")) {
   ## devtools is required
   library(devtools)
-  install_github("trinker/pacman")
+  #install_github("trinker/pacman")
 }
-
+if (!require("caret")) install.packages("caret")
 library(e1071)
 
 pacman::p_load(knitr, readr, stringr, tesseract, vecsets)
@@ -215,9 +215,27 @@ replace_before <- tolower(rownames(datamatrix))
 newdatamatrix <- datamatrix
 row.names(newdatamatrix) <- replace_before
 
+# Extract those words where we detect errors
 replace_after <- unlist(lapply(replace_before, function(x) replace_func(x)))
 correct_after_correction = lapply(1:100, function(x) new_correct_index(x)$total_correct_words)
 total_after_correction = lapply(1:100, function(x) new_correct_index(x)$total_words)
+
+ground_char_count <- NULL
+tess_char_count <- NULL
+corrected_char_count <- NULL
+
+## Evaluating character-level metrics (precision & recall)
+for (word in replace_after) {
+  word_alph <- sub("[^[:alpha:]]", "", word)
+  char_table <- table(factor(unlist(strsplit(word_alph, ""), use.names=FALSE), levels=letters))
+  if(is.null(corrected_char_count)) {
+    corrected_char_count <- char_table
+  }
+  else {
+    corrected_char_count <- corrected_char_count + char_table
+  }
+}
+print(corrected_char_count)
 
 OCR_performance_table <- data.frame("Tesseract" = rep(NA,4),
                                     "Tesseract_with_postprocessing" = rep(NA,4))
