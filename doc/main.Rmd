@@ -235,7 +235,18 @@ for (word in replace_after) {
     corrected_char_count <- corrected_char_count + char_table
   }
 }
-print(corrected_char_count)
+
+for (word in ground_truth_vec) {
+  word_alph <- sub("[^[:alpha:]]", "", word)
+  char_table <- table(factor(unlist(strsplit(word_alph, ""), use.names=FALSE), levels=letters))
+  if(is.null(ground_char_count)) {
+    ground_char_count <- char_table
+  }
+  else {
+    ground_char_count <- ground_char_count + char_table
+  }
+}
+
 
 OCR_performance_table <- data.frame("Tesseract" = rep(NA,4),
                                     "Tesseract_with_postprocessing" = rep(NA,4))
