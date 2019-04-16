@@ -2,15 +2,18 @@ library(e1071)
 source('../lib/ifCleanToken.R')
 load('../output/bigram.RData')
 load('../output/datamatrix.RData')
-load('../output/datamatrix.RData')
-#head(datamatrix)
+file_name_vec <- list.files("../data/ground_truth") #100 files in total
 #split the dataset into training and test data 
-train_mat<-as.data.frame(datamatrix[,c(-1,-2,-3,-4,-27)])
-train_mat$ifwordcorrect<-factor(train_mat$ifwordcorrect)
 set.seed(1)
-s<-sample(1:2,nrow(train_mat),prob=c(0.8,0.2),replace=T)
-trainset<-train_mat[s==1,]
-testset<-train_mat[s==2,]
+head(datamatrix)
+s<-sample(1:2,length(file_name_vec),prob=c(0.8,0.2),replace=T)
+train.index<-which(s==1)
+test.index<-which(s==2)
+datamatrix<-as.data.frame(datamatrix)
+datamatrix$ifwordcorrect<-factor(datamatrix$ifwordcorrect)
+trainset<-as.data.frame(datamatrix[datamatrix$j %in% train.index,c(-1,-2,-3,-4,-27)])
+testset<-as.data.frame(datamatrix[datamatrix$j %in% test.index,c(-1,-2,-3,-4,-27)])
+
 #try to train svm model using caret package, but running time is too long, so I gave up.
 library(kernlab)
 library(caret)
@@ -36,11 +39,6 @@ for(i in 1:3){
 #best model is with C=1, gamma=1
 svm.best<-svm(ifwordcorrect~.,data=trainset,cost=1,gamma=1,scale=T,kernel="radial")
 save(svm.best, file = "../output/svm.best.rda")
-predvalue<-predict(svm.best, trainset[,-1])
+predvalue<-predict(svm.best, testset[,-1])
 save(predvalue, file = "../output/predvalue.rda")
-#retrain the model on the whole dataset
-svm.model <- svm(ifwordcorrect ~ ., data = train_mat, cost = 1, gamma = 1)
-svm.pred <- predict(svm.model, train_mat[,-1])
-accuracy<- mean(svm.pred==train_mat$ifwordcorrect) #training accuracy
-save(svm.model, file = "../output/svm.model.rda")
-save(svm.pred, file = "../output/svm.model.pred.rda")
+

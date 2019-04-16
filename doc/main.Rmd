@@ -124,29 +124,37 @@ The referenced papers are:
 In this statercode, we implement the first three rules in the first paper -- rule based techniques, as an example.
 
 ```{r}
-#the output and features of each word
-load('../output/datamatrix.RData')
-#head(datamatrix)
-
 #see the svm.R
-#accuracy of SVM model
-train_mat<-as.data.frame(datamatrix[,c(-1,-2,-3,-4,-27)])
-train_mat$ifwordcorrect<-factor(train_mat$ifwordcorrect)
+#performance of SVM model
+load('../output/datamatrix.RData')
+
 #split the dataset into training and test data 
 set.seed(1)
-s<-sample(1:2,nrow(train_mat),prob=c(0.8,0.2),replace=T)
-trainset<-train_mat[s==1,]
-testset<-train_mat[s==2,]
+head(datamatrix)
+s<-sample(1:2,length(file_name_vec),prob=c(0.8,0.2),replace=T)
+train.index<-which(s==1)
+test.index<-which(s==2)
+datamatrix<-as.data.frame(datamatrix)
+datamatrix$ifwordcorrect<-factor(datamatrix$ifwordcorrect)
+trainset<-as.data.frame(datamatrix[datamatrix$j %in% train.index,c(-1,-2,-3,-4,-27)])
+testset<-as.data.frame(datamatrix[datamatrix$j %in% test.index,c(-1,-2,-3,-4,-27)])
+
 #report training accuracy
 load("../output/svm.best.rda")
 load("../output/predvalue.rda")
-mean(trainset$ifwordcorrect==predvalue)
+
 #report training confusion matrix
 library(caret)
-confusionMatrix(data=predvalue,reference=trainset$ifwordcorrect)
-#retrain the svm on the whole dataset
-load("../output/svm.model.rda")
-load("../output/svm.model.pred.rda")
+confusionMatrix(data=predvalue,reference=testset$ifwordcorrect,positive="0")->svm.table
+svm.table
+#recall
+svm.table$table[1,1]/(svm.table$table[1,1]+svm.table$table[1,2])->recall
+recall
+#F-1 score
+precision<-svm.table$table[1,1]/(svm.table$table[2,1]+svm.table$table[1,1])
+f1<-2*precision*recall/(precision+recall)
+f1
+
 ```
 
 
