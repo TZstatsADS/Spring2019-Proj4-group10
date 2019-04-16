@@ -63,6 +63,7 @@ In this project, we are going to **focus on the third stage -- post-processing**
 # Step 1 - Load library and source code
 ```{r, warning=FALSE, message = FALSE}
 if (!require("devtools")) install.packages("devtools")
+if (!require("caret")) install.packages("devtools")
 if (!require("pacman")) {
   ## devtools is required
   library(devtools)
@@ -73,6 +74,7 @@ library(e1071)
 
 pacman::p_load(knitr, readr, stringr, tesseract, vecsets)
 source('../lib/ifCleanToken.R')
+source('../lib/correct_index_func.R')
 load('../output/bigram.RData')
 file_name_vec <- list.files("../data/ground_truth") #100 files in total
 ```
@@ -120,87 +122,6 @@ The referenced papers are:
 
 In this statercode, we implement the first three rules in the first paper -- rule based techniques, as an example.
 
-```{r, warning=FALSE}
-source('../lib/features.R')
-datamatrix = c()
-for(j in c(1:length(file_name_vec))){
-#for(j in c(1:2)){
-  current_file_name <- sub(".txt","",file_name_vec[j])
-  ## read the ground truth text
-  current_ground_truth_txt <- readLines(paste("../data/ground_truth/",current_file_name,".txt",sep=""), warn=FALSE)
-  ## read the tesseract text
-  current_tesseract_txt <- readLines(paste("../data/tesseract/",current_file_name,".txt",sep=""), warn=FALSE)
-  
-  #split ground truth text
-  truth_split <- str_split(current_ground_truth_txt, " ")
-  tru_split <- unlist(truth_split)
-  truth_lengthperrow <- sapply(truth_split, length)
-  truth_rowindex <- rep(1:length(current_ground_truth_txt), truth_lengthperrow)
-  #truth_table <- cbind(word = unlist(truth_split), truth_rowindex)
-  
-  #split tesseract text
-  tesseract_split <- str_split(current_tesseract_txt, " ")
-  tes_split <- unlist(tesseract_split)
-  tes_lengthperrow <- sapply(tesseract_split, length)
-  tes_row <- rep(1:length(current_tesseract_txt), tes_lengthperrow)
-  #tesseract_table <- cbind(word = tes_split, tes_row)
-  
-  #get position of correct ones
-  res = c()
-  pos = rep(list(0), length(tes_split))
-  for (i in 1:length(tes_split)){
-    res[i] <- ifelse(tes_split[i] %in% tru_split,1,0)
-    pos[[i]] <- if(res[i]==1) which(tru_split==tes_split[i]) else 0
-  }
-  tempindex <- cumsum(res)
-
-  truthpos <- c(0)
-  for (i in 1:length(tes_split)){
-    nextnonzero1 <- min(which(tempindex == tempindex[i]+1))
-    nextnonzero2 <- min(which(tempindex == tempindex[i]+2))
-    a <- pos[[nextnonzero1]]
-    b <- pos[[nextnonzero2]]
-    # truthpos[i+1] <- ifelse(sum((pos[[i]]>truthpos[i])&(pos[[i]] <= (i+5)))>0,
-    truthpos[i+1] <- ifelse(sum((pos[[i]]>truthpos[i]) &
-                                  pos[[i]]<= min(a[a>truthpos[i]]) & pos[[i]]<= min(b[b>truthpos[i]])
-                                )>0,
-
-                          pos[[i]][min(which(pos[[i]]>truthpos[i]))],
-                          truthpos[i])
-  }
-  truthpos <- truthpos[-1]
-  truthpos[c(0, diff(truthpos))==0] <- 0
-  
-  #1: correct, 0: wrong
-  ifwordcorrect <- rep(1,length(tes_split))
-  ifwordcorrect[truthpos==0] <- 0
-  #add row index
-  truth_row <- unlist(sapply(1:length(tes_split), function(x) ifelse(truthpos[x]==0,0,truth_rowindex[truthpos[x]])))
-
-  #create matrix
-  index <- 1:length(truth_row)
-  ifcorrectmatrix <- cbind(index, tes_row, truthpos, truth_row, ifwordcorrect)
-  rownames(ifcorrectmatrix) <- tes_split
-  
-  #add features
-  feat <- do.call(rbind, lapply(tes_split, features))
-  # datamatrix[[j]] <- cbind(ifcorrectmatrix, feat)
-  tempmatrix <- cbind(ifcorrectmatrix, feat, j)
-  datamatrix <- rbind(datamatrix, tempmatrix)
-  
-# as.numeric(datamatrix[datamatrix[,'ifwordcorrect']==0,][,'f10'])%>%mean()
-# 0.6414072
-# as.numeric(datamatrix[datamatrix[,'ifwordcorrect']==1,][,'f10'])%>%mean()
-# 1.213309
-# dm <- data.frame(datamatrix)
-# apply(is.na(dm),2,sum)
-}
-
-#save(datamatrix, file = '../output/datamatrix.RData')
-
-```
-
-SVM
 ```{r}
 #see the svm.R
 #accuracy of SVM model
@@ -251,7 +172,6 @@ The referenced papers are:
 #see correction.R
 load("../output/error_correction.RData")
 tesseract_correct_vec<-dete_error$correct
-
 ```
 
 # Step 5 - Performance measure
@@ -275,7 +195,7 @@ for(i in c(1:length(file_name_vec))){
   truth <- c(truth, inputtxt)
 }
 #head(truth,15)
-ground_truth <- unlist(strsplit(tolower(truth), " "))
+ground_truth_vec <- unlist(strsplit(tolower(truth), " "))
 load("../output/svm.model.pred.rda")
 tesseract_vec <-rownames(datamatrix)#298728
 tesseract_if_clean<-svm.pred#298728
@@ -294,6 +214,16 @@ OCR_performance_table["word_wise_recall","Tesseract"] <- length(old_intersect_ve
 OCR_performance_table["word_wise_precision","Tesseract"] <- length(old_intersect_vec)/length(tesseract_vec)
 OCR_performance_table["word_wise_recall","Tesseract_with_postprocessing"] <- length(new_intersect_vec)/length(ground_truth_vec)
 OCR_performance_table["word_wise_precision","Tesseract_with_postprocessing"] <- length(new_intersect_vec)/length(tesseract_vec_clean)
+
+#replace those wrong words
+# length(rownames(datamatrix))
+# nrow(datamatrix)
+unique_error <- unique(dete_error)
+replace_before <- rownames(datamatrix)
+replace_after <- unlist(lapply(replace_before, function(x) replace_func(x)))
+a = lapply(1:20, function(x) new_correct_index(x)$total_correct_words)
+b = lapply(1:20, function(x) new_correct_index(x)$total_words)
+sum(unlist(a))/sum(unlist(b))
 kable(OCR_performance_table, caption="Summary of OCR performance")
 ```
 

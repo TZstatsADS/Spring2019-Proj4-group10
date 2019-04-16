@@ -1,11 +1,10 @@
-source('../lib/features.R')
-datamatrix = c()
-for(j in c(1:length(file_name_vec))){
-  current_file_name <- sub(".txt","",file_name_vec[j])
+file_name_vec <- list.files("../data/ground_truth") #100 files in total
+
+new_correct_index <- function(num_of_file_name){
+  
+  current_file_name <- sub(".txt","",file_name_vec[num_of_file_name])
   ## read the ground truth text
   current_ground_truth_txt <- readLines(paste("../data/ground_truth/",current_file_name,".txt",sep=""), warn=FALSE)
-  ## read the tesseract text
-  current_tesseract_txt <- readLines(paste("../data/tesseract/",current_file_name,".txt",sep=""), warn=FALSE)
   
   #split ground truth text and get row index
   truth_split <- str_split(current_ground_truth_txt, " ")
@@ -13,11 +12,8 @@ for(j in c(1:length(file_name_vec))){
   truth_lengthperrow <- sapply(truth_split, length)
   truth_rowindex <- rep(1:length(current_ground_truth_txt), truth_lengthperrow)
   
-  #split tesseract text and get row index
-  tesseract_split <- str_split(current_tesseract_txt, " ")
-  tes_split <- unlist(tesseract_split)
-  tes_lengthperrow <- sapply(tesseract_split, length)
-  tes_row <- rep(1:length(current_tesseract_txt), tes_lengthperrow)
+  #read the text after correction
+  tes_split <- replace_after[newdatamatrix[,'j'] == num_of_file_name]
   
   ###############
   #get the correct position of corresponding word in ground truth text
@@ -37,7 +33,7 @@ for(j in c(1:length(file_name_vec))){
     pos[[i]] <- if(res[i]==1) which(tru_split==tes_split[i]) else 0
   }
   tempindex <- cumsum(res)
-
+  
   #for each selected word in the loop, we have the index of it's previous selected word, 
   #if the previous selected word is not an appeared word, the index will be equal to the last appeared word.
   #delete indexes which are smaller than the index of the previous selected word.
@@ -77,14 +73,13 @@ for(j in c(1:length(file_name_vec))){
   
   #create matrix
   index <- 1:length(truth_row)
-  ifcorrectmatrix <- cbind(index, tes_row, truthpos, truth_row, ifwordcorrect)
+  ifcorrectmatrix <- cbind(index, truthpos, ifwordcorrect)
   rownames(ifcorrectmatrix) <- tes_split
   
-  #add features to this matrix
-  feat <- do.call(rbind, lapply(tes_split, features))
-  tempmatrix <- cbind(ifcorrectmatrix, feat, j)
-  datamatrix <- rbind(datamatrix, tempmatrix)
+  total_correct_words <- sum(ifcorrectmatrix[,'ifwordcorrect']==1)
+  total_words <- nrow(ifcorrectmatrix)
   
+  return(list(ifcorrectmatrix=ifcorrectmatrix, 
+              total_correct_words=total_correct_words, 
+              total_words=total_words))
 }
-
-save(datamatrix, file = '../output/datamatrix.RData')
