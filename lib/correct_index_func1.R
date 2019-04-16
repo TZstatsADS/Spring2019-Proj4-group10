@@ -8,9 +8,9 @@ new_correct_index <- function(num_of_file_name){
   
   #split ground truth text and get row index
   truth_split <- str_split(current_ground_truth_txt, " ")
-  tru_split <- unlist(truth_split)
-  truth_lengthperrow <- sapply(truth_split, length)
-  truth_rowindex <- rep(1:length(current_ground_truth_txt), truth_lengthperrow)
+  tru_split <- tolower(unlist(truth_split))
+  # truth_lengthperrow <- sapply(truth_split, length)
+  # truth_rowindex <- rep(1:length(current_ground_truth_txt), truth_lengthperrow)
   
   #read the text after correction
   tes_split <- replace_after[newdatamatrix[,'j'] == num_of_file_name]
@@ -69,7 +69,7 @@ new_correct_index <- function(num_of_file_name){
   ifwordcorrect[truthpos==0] <- 0
   
   #add row index in ground truth text 
-  truth_row <- unlist(sapply(1:length(tes_split), function(x) ifelse(truthpos[x]==0,0,truth_rowindex[truthpos[x]])))
+  #truth_row <- unlist(sapply(1:length(tes_split), function(x) ifelse(truthpos[x]==0,0,truth_rowindex[truthpos[x]])))
   
   #create matrix
   index <- 1:length(truth_row)
@@ -79,7 +79,6 @@ new_correct_index <- function(num_of_file_name){
   total_correct_words <- sum(ifcorrectmatrix[,'ifwordcorrect']==1)
   total_words <- nrow(ifcorrectmatrix)
   
-  return(list(ifcorrectmatrix=ifcorrectmatrix, 
-              total_correct_words=total_correct_words, 
+  return(list(total_correct_words=total_correct_words, 
               total_words=total_words))
 }

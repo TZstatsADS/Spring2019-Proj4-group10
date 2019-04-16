@@ -39,7 +39,7 @@ for(j in c(1:length(file_name_vec))){
   tempindex <- cumsum(res)
 
   #for each selected word in the loop, we have the index of it's previous selected word, 
-  #if the previous selected word is not an appeared word, the index will be equal to the last appeared word.
+  #if the previous selected word is not an appeared word in the ground truth text, the index will be equal to the last appeared word.
   #delete indexes which are smaller than the index of the previous selected word.
   #and delete indexes which are greater than the smallest possible index of next two words
   
