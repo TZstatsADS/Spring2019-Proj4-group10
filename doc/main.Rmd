@@ -225,6 +225,16 @@ tess_char_count <- NULL
 corrected_char_count <- NULL
 
 ## Evaluating character-level metrics (precision & recall)
+for (word in tesseract_vec_clean) {
+  word_alph <- sub("[^[:alpha:]]", "", word)
+  char_table <- table(factor(unlist(strsplit(word_alph, ""), use.names=FALSE), levels=letters))
+  if(is.null(ground_char_count)) {
+    tess_char_count <- char_table
+  }
+  else {
+    tess_char_count <- tess_char_count + char_table
+  }
+}
 
 for (word in replace_after) {
   word_alph <- sub("[^[:alpha:]]", "", word)
@@ -248,16 +258,7 @@ for (word in ground_truth_vec) {
   }
 }
 
-for (word in tesseract_vec_clean) {
-  word_alph <- sub("[^[:alpha:]]", "", word)
-  char_table <- table(factor(unlist(strsplit(word_alph, ""), use.names=FALSE), levels=letters))
-  if(is.null(ground_char_count)) {
-    tess_char_count <- char_table
-  }
-  else {
-    tess_char_count <- tess_char_count + char_table
-  }
-}
+
 
 
 
