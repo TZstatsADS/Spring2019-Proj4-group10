@@ -72,7 +72,7 @@ new_correct_index <- function(num_of_file_name){
   #truth_row <- unlist(sapply(1:length(tes_split), function(x) ifelse(truthpos[x]==0,0,truth_rowindex[truthpos[x]])))
   
   #create matrix
-  index <- 1:length(truth_row)
+  index <- 1:length(tes_split)
   ifcorrectmatrix <- cbind(index, truthpos, ifwordcorrect)
   rownames(ifcorrectmatrix) <- tes_split
   

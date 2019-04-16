@@ -75,6 +75,7 @@ library(e1071)
 pacman::p_load(knitr, readr, stringr, tesseract, vecsets)
 source('../lib/ifCleanToken.R')
 source('../lib/correct_index_func1.R')
+source('../lib/replace_function.R')
 load('../output/bigram.RData')
 file_name_vec <- list.files("../data/ground_truth") #100 files in total
 ```
@@ -123,9 +124,12 @@ The referenced papers are:
 In this statercode, we implement the first three rules in the first paper -- rule based techniques, as an example.
 
 ```{r}
+#the output and features of each word
+load('../output/datamatrix.RData')
+#head(datamatrix)
+
 #see the svm.R
 #accuracy of SVM model
-load('../output/datamatrix.RData')
 train_mat<-as.data.frame(datamatrix[,c(-1,-2,-3,-4,-27)])
 train_mat$ifwordcorrect<-factor(train_mat$ifwordcorrect)
 #split the dataset into training and test data 
@@ -208,12 +212,17 @@ tesseract_vec_clean <- c(tesseract_vec[!tesseract_if_error],tesseract_correct_ve
 # nrow(datamatrix)
 unique_error <- unique(dete_error)
 replace_before <- tolower(rownames(datamatrix))
+newdatamatrix <- datamatrix
+row.names(newdatamatrix) <- replace_before
 
 replace_after <- unlist(lapply(replace_before, function(x) replace_func(x)))
 correct_after_correction = lapply(1:100, function(x) new_correct_index(x)$total_correct_words)
 total_after_correction = lapply(1:100, function(x) new_correct_index(x)$total_words)
-sum(unlist(correct_after_correction))/sum(unlist(total_after_correction))
 
+OCR_performance_table <- data.frame("Tesseract" = rep(NA,4),
+                                    "Tesseract_with_postprocessing" = rep(NA,4))
+row.names(OCR_performance_table) <- c("word_wise_recall","word_wise_precision",
+                                      "character_wise_recall","character_wise_precision")
 OCR_performance_table["word_wise_recall","Tesseract"] <- sum(datamatrix[,'ifwordcorrect'])/nrow(datamatrix)
 OCR_performance_table["word_wise_precision","Tesseract"] <- sum(datamatrix[,'ifwordcorrect'])/length(ground_truth_vec)
 OCR_performance_table["word_wise_recall","Tesseract_with_postprocessing"] <- sum(unlist(correct_after_correction))/sum(unlist(total_after_correction))
