@@ -130,7 +130,7 @@ load('../output/datamatrix.RData')
 
 #split the dataset into training and test data 
 set.seed(1)
-head(datamatrix)
+#head(datamatrix)
 s<-sample(1:2,length(file_name_vec),prob=c(0.8,0.2),replace=T)
 train.index<-which(s==1)
 test.index<-which(s==2)
@@ -182,8 +182,16 @@ The referenced papers are:
 
 ```{r}
 #see correction.R
+test_df<-as.data.frame(datamatrix[datamatrix$j %in% test.index,])
+test_vec<-rownames(test_df)
+test_if_clean<-predvalue
+#length(tesseract_if_clean)
+test_if_error<-ifelse(test_if_clean==1,F,T)
+#extract error terms
+test_error_vec <- test_vec[test_if_error]
+
 load("../output/error_correction.RData")
-tesseract_correct_vec<-dete_error$correct
+
 ```
 
 # Step 5 - Performance measure

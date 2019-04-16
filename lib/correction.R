@@ -11,15 +11,17 @@ for(i in c(1:length(file_name_vec))){
 ground_truth_vec <- unlist(strsplit(tolower(truth), " "))
 #length(ground_truth_vec)
 #tesseract_vec with detected error
-load("../output/svm.model.pred.rda")
-tesseract_vec <-rownames(datamatrix)#298728
-tesseract_if_clean<-svm.pred#298728
+load("../output/predvalue.rda")
+#see correction.R
+test_df<-as.data.frame(datamatrix[datamatrix$j %in% test.index,])
+test_vec<-rownames(test_df)
+test_if_clean<-predvalue
 #length(tesseract_if_clean)
-tesseract_if_error<-ifelse(tesseract_if_clean==1,F,T)
-#remove garbage terms
-tesseract_error_vec <- tesseract_vec[tesseract_if_error]
-#length(tesseract_error_vec)
-error <- tesseract_error_vec
+test_if_error<-ifelse(test_if_clean==1,F,T)
+#extract error terms
+test_error_vec <- test_vec[test_if_error]
+#length(test_error_vec)
+error <- test_error_vec
 error <- tolower(error)
 #word clean
 a <- na.omit(strsplit(unlist(error), "[^a-z]+"))
