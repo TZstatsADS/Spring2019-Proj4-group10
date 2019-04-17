@@ -236,12 +236,10 @@ head(tesseract_vec, 10)
 
 # Loading in tesseract words after detection + correction algorithm
 
-# Correcting words with 1 errors
-#load("../output/aftercorrection1.RData")
+# Using correction of words with 1 errors
 #aftercorrection_vec <- test_df_correct1[,2]
 
-# Correcting words with 2 errors
-load("../output/aftercorrection2.RData")
+# Using correction of words with 2 errors
 aftercorrection_vec <- test_df_correct2[,2]
 
 #43023
