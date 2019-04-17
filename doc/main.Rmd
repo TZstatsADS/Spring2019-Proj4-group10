@@ -228,6 +228,22 @@ for(i in test.index){
   inputtxt1 <- unlist(strsplit(tolower(inputtxt), " "))
   ground_truth_vec <- c(ground_truth_vec, inputtxt1)
 }
+ground_truth_vec <- unlist(strsplit(tolower(truth), " "))
+
+# Collecting tesseract vector
+tesseract_vec <- rownames(testset)
+head(tesseract_vec, 10)
+
+# Loading in tesseract words after detection + correction algorithm
+
+# Correcting words with 1 errors
+#load("../output/aftercorrection1.RData")
+#aftercorrection_vec <- test_df_correct1[,2]
+
+# Correcting words with 2 errors
+load("../output/aftercorrection2.RData")
+aftercorrection_vec <- test_df_correct2[,2]
+
 #43023
 
 # Collecting tesseract vector
@@ -255,30 +271,8 @@ tess_char_count <- NULL
 corrected_char_count <- NULL
 
 ## Evaluating character-level metrics (precision & recall)
-for (word in tesseract_vec_clean) {
-  word_alph <- sub("[^[:alpha:]]", "", word)
-  char_table <- table(factor(unlist(strsplit(word_alph, ""), use.names=FALSE), levels=letters))
-  if(is.null(ground_char_count)) {
-    tess_char_count <- char_table
-  }
-  else {
-    tess_char_count <- tess_char_count + char_table
-  }
-}
-
-for (word in replace_after) {
-  word_alph <- sub("[^[:alpha:]]", "", word)
-  char_table <- table(factor(unlist(strsplit(word_alph, ""), use.names=FALSE), levels=letters))
-  if(is.null(corrected_char_count)) {
-    corrected_char_count <- char_table
-  }
-  else {
-    corrected_char_count <- corrected_char_count + char_table
-  }
-}
-
 for (word in ground_truth_vec) {
-  word_alph <- sub("[^[:alpha:]]", "", word)
+  word_alph <- gsub("[^[:alpha:]]+", "", word)
   char_table <- table(factor(unlist(strsplit(word_alph, ""), use.names=FALSE), levels=letters))
   if(is.null(ground_char_count)) {
     ground_char_count <- char_table
@@ -288,7 +282,41 @@ for (word in ground_truth_vec) {
   }
 }
 
+for (word in tesseract_vec) {
+  word_alph <- gsub("[^[:alpha:]]+", "", word)
+  char_table <- table(factor(unlist(strsplit(word_alph, ""), use.names=FALSE), levels=letters))
+  if(is.null(tess_char_count)) {
+    tess_char_count <- char_table
+  }
+  else {
+    tess_char_count <- tess_char_count + char_table
+  }
+}
 
+for (word in aftercorrection_vec) {
+  word_alph <- gsub("[^[:alpha:]]+", "", word)
+  char_table <- table(factor(unlist(strsplit(word_alph, ""), use.names=FALSE), levels=letters))
+  if(is.null(corrected_char_count)) {
+    corrected_char_count <- char_table
+  }
+  else {
+    corrected_char_count <- corrected_char_count + char_table
+  }
+}
+
+tess_pre_char_correct <- 0
+tess_post_char_correct <- 0
+
+for (i in names(ground_char_count)) {
+  tess_pre_char_correct <- tess_pre_char_correct + min(ground_char_count[i], tess_char_count[i])
+  tess_post_char_correct <- tess_post_char_correct + min(ground_char_count[i], corrected_char_count[i])
+}
+
+# Character-wise recall & precision
+OCR_performance_table["character_wise_recall","Tesseract"] <- tess_pre_char_correct / sum(ground_char_count)
+OCR_performance_table["character_wise_precision","Tesseract"] <- tess_pre_char_correct / sum(tess_char_count)
+OCR_performance_table["character_wise_recall","Tesseract_with_postprocessing"] <- tess_post_char_correct / sum(ground_char_count)
+OCR_performance_table["character_wise_precision","Tesseract_with_postprocessing"] <- tess_post_char_correct / sum(corrected_char_count)
 
 kable(OCR_performance_table, caption="Summary of OCR performance")
 ```
