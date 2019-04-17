@@ -1,12 +1,15 @@
+# if (!requireNamespace("BiocManager", quietly = TRUE))
+#   install.packages("BiocManager")
+# BiocManager::install("genefilter", version = "3.8")
+library(genefilter)
 file_name_vec <- list.files("../data/ground_truth") #100 files in total
-#split the dataset into training and test data 
+#split the datmaset into training and test data 
 set.seed(1)
 s<-sample(1:2,length(file_name_vec),prob=c(0.8,0.2),replace=T)
 train.index<-which(s==1)
 test.index<-which(s==2)
 source('../lib/ifCleanToken.R')
-load('../output/bigram.RData')
-file_name_vec <- list.files("../data/ground_truth") #100 files in total
+# load('../output/bigram.RData')
 library(tidyr)
 truth <- c()
 for(i in train.index){
@@ -17,12 +20,13 @@ for(i in train.index){
 ground_truth_vec <- unlist(strsplit(tolower(truth), " "))
 #length(ground_truth_vec)
 load('../output/datamatrix_new.RData')
+load('../output/tes_split_list.RData')
 #tesseract_vec with detected error
 load("../output/predvalue.rda")
 #see correction.R
 datamatrix<-as.data.frame(datamatrix)
 test_df<-datamatrix[datamatrix$j %in% test.index,]
-test_vec<-rownames(test_df)
+test_vec <- tes_split_list[datamatrix$j %in% test.index]
 test_if_clean<-predvalue
 #length(tesseract_if_clean)
 test_if_error<-ifelse(test_if_clean==1,F,T)
@@ -31,6 +35,7 @@ test_error_vec <- test_vec[test_if_error]
 #length(test_error_vec)
 error <- test_error_vec
 error <- tolower(error)
+
 #word clean
 a <- na.omit(strsplit(unlist(error), "[^a-z]+"))
 c = 0
@@ -248,13 +253,12 @@ for (l in error1) {
 dete_error
 save(dete_error, file = '../output/error_correction2.RData')
 
-correct2<-rep(NA,length(error))
+correct2 <- rep(NA,length(error))
+correct2[error.index] <- dete_error$corr
+correct2[-error.index] <- error[-error.index]
 
-correct2[error.index]<-dete_error2$corr
-correct2[-error.index]<-error[-error.index]
-
-test_vec_correct2<-test_vec
-test_vec_correct2[test_if_error]<-correct2
-test_df_correct2<-cbind(tolower(test_vec),tolower(test_vec_correct2))
-colnames(test_df_correct2)<-c("original_tesseract","after_correction2")
+test_vec_correct2 <- tolower(test_vec)
+test_vec_correct2[test_if_error] <- correct2
+test_df_correct2 <- cbind(tolower(test_vec),tolower(test_vec_correct2))
+colnames(test_df_correct2) <- c("original_tesseract","after_correction2")
 save(test_df_correct2, file = '../output/aftercorrection2.RData')
