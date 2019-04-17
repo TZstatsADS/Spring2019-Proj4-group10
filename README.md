@@ -9,12 +9,12 @@ Term: Spring 2019
 + Team 10
 + Team members
 	+ Xiaoxi Zhao xz2740
-	+ team member 2
+	+ Seungwook Han sh3264
 	+ team member 3
 	+ team member 4
 	+ team member 5
 
-+ Project summary: In this project, we created an OCR post-processing procedure to enhance Tesseract OCR output. Our work is based on two parts: detection and correction.We implemented the methods listed in D3 and C1. We first extract 12 features from the text and use svm with RBF Kernel to train the model and predict which one is the error word(garbage). Then we realised the correction methods in C1. Finally we report our test confusion matrix.
++ Project summary: In this project, we created an OCR post-processing procedure to enhance Tesseract OCR output. Our work is based on two parts: detection and correction.We implemented the methods listed in D3 and C1. We first extract 12 features from the text and use svm with RBF Kernel to train the model and predict which one is the error word(garbage). Then we realised the correction methods in C1. The C1 paper presents an error correction method for the case in which a word has 1 error -- using digram features. However, we extended the error correction method further by implementing an error correction method for the case in which a word has 2 errors. Finally we report our test confusion matrix.
 	
 **Contribution statement**: ([default](doc/a_note_on_contributions.md)) All team members contributed equally in all stages of this project. All team members approve our work presented in this GitHub repository including this contributions statement. 
 
