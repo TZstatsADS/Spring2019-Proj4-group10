@@ -140,11 +140,11 @@ print(paste('f1:', f1))
 
 # Step 4 - Error correction
 
-Given the detected word error, in order to find the best correction, we need to generating the candidate corrections: a dictionary or a database of legal n-grams to locate one or more potential correction terms. Then we need invoke some lexical-similarity measure between the misspelled string and the candidates or a probabilistic estimate of the likelihood of the correction to rank order the candidates.
+Given the detected word error, in order to find the best correction, we need to generating the candidate corrections: we first need to divide words based on their characters' length. Then, a dictionary or a database of legal n-grams to locate one or more potential correction characters is built for each word-length. Further, we need to invoke some lexical-similarity measures between the misspelled characters and the candidates or a probabilistic estimate of the likelihood of the correction to rank order the candidates. After fixing the incorrect positions of the words, we look for characters in the designed discionary which will make the word correct.
 
 Our referenced paper is [Letter n-gram](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=1672564}{positional binary digram)
 
-The C1 paper presents an error correction method for the case in which a word has 1 error -- using digram features. What's more, we extended the error correction method further by implementing an error correction method for the case in which a word has 2 errors. 
+The C1 paper presents an error detection and correction method for the case in which a word has 1 error -- using digram matrix. What's more, we extended the error detection and correction method further by implementing a method for the case in which a word has 2 errors. 
 
 ```{r}
 #see correction.R
