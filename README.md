@@ -22,6 +22,7 @@ Term: Spring 2019
 + Seungwook Han: Generated features 1-3, most frequent symbol feature, non-alphabetical symbols feature, brainstormed and outlined our error detection and correction pipeline with splitting of data, implemented character-wise evaluation metrics, described our implementation details for the project in main.Rmd
 + Hongye Jiang: Genarated the features including bigram, Most frequent symbol, and Non-alphabetical symbols. Wrote an algorithm to determine if each word in OCR output is correct. Combined all these features and if-correct result together into one function for implementing SVM. Implemented word-wise evaluation metrics. Connected each part of this project, added comments and reran the whole project. Prepared for the presentation. 
 + Xinzhu Wang: Implemented whole error correction part based on C1 paper, including detecting and correcting words with only 1 error. Further improved the correction part by taking care of 2 errors' detection and correction. Xinzhu is also responsible to modify and debug any code related to the correction part. Described details of the correction part in main.Rmd.
++ Jingyue Li: Contributed to the error detection part.
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
