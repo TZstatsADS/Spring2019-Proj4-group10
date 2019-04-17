@@ -1,6 +1,8 @@
 source('../lib/features.R')
 datamatrix = c()
+tes_split_list = c()
 for(j in c(1:length(file_name_vec))){
+# for(j in c(1:2)){
   current_file_name <- sub(".txt","",file_name_vec[j])
   ## read the ground truth text
   current_ground_truth_txt <- readLines(paste("../data/ground_truth/",current_file_name,".txt",sep=""), warn=FALSE)
@@ -78,13 +80,13 @@ for(j in c(1:length(file_name_vec))){
   #create matrix
   index <- 1:length(truth_row)
   ifcorrectmatrix <- cbind(index, tes_row, truthpos, truth_row, ifwordcorrect)
-  rownames(ifcorrectmatrix) <- tes_split
+  #rownames(ifcorrectmatrix) <- tes_split
   
   #add features to this matrix
   feat <- do.call(rbind, lapply(tes_split, features))
   tempmatrix <- cbind(ifcorrectmatrix, feat, j)
   datamatrix <- rbind(datamatrix, tempmatrix)
-  
+  tes_split_list <- c(tes_split_list, tes_split)
 }
 
 # for (p in 1:100){
@@ -92,4 +94,5 @@ for(j in c(1:length(file_name_vec))){
 #   print(row.names(datamatrix[datamatrix[,'j']==p,])[1:3])
 # }
 
-save(datamatrix, file = '../output/datamatrix.RData')
+save(datamatrix, file = '../output/datamatrix_new.RData')
+save(tes_split_list, file = '../output/tes_split_list.RData')
