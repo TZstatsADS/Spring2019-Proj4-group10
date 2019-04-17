@@ -77,6 +77,7 @@ source('../lib/ifCleanToken.R')
 source('../lib/correct_index_func1.R')
 source('../lib/replace_function.R')
 load('../output/bigram.RData')
+load("../output/svm.model.pred.rda")
 file_name_vec <- list.files("../data/ground_truth") #100 files in total
 ```
 
@@ -127,6 +128,14 @@ In this statercode, we implement the first three rules in the first paper -- rul
 #see the svm.R
 #performance of SVM model
 load('../output/datamatrix.RData')
+
+#test  (delete later)
+# for (p in 1:100){
+#   print(p)
+#   print(row.names(datamatrix[datamatrix[,'j']==p,])[1:3])
+# }
+
+
 #split the dataset into training and test data 
 set.seed(1)
 #head(datamatrix)
@@ -152,7 +161,6 @@ recall
 precision<-svm.table$table[1,1]/(svm.table$table[2,1]+svm.table$table[1,1])
 f1<-2*precision*recall/(precision+recall)
 f1
-
 ```
 
 
@@ -180,7 +188,7 @@ The referenced papers are:
 
 ```{r}
 #see correction.R
-test_df<-as.data.frame(datamatrix[datamatrix$j %in% test.index,])
+test_df<-as.data.frame(datamatrix[datamatrix[,'j'] %in% test.index,])
 test_vec<-rownames(test_df)
 test_if_clean<-predvalue
 #length(tesseract_if_clean)
@@ -188,6 +196,8 @@ test_if_error<-ifelse(test_if_clean==1,F,T)
 #extract error terms
 test_error_vec <- test_vec[test_if_error]
 load("../output/error_correction.RData")
+load("../output/aftercorrection1.RData")
+load("../output/aftercorrection2.RData")
 ```
 
 # Step 5 - Performance measure
@@ -204,18 +214,21 @@ Both *precision* and *recall* are mathematically convenient measures because the
 Here, we only finished the **word level evaluation** criterions, you are required to complete the **character-level** part.
 
 ```{r, warning=FALSE}
-library(tidyr)
-truth <- c()
-# Collecting ground truth vector
-for(i in test.index){
-  inputtxt <- readLines(paste("../data/ground_truth/",file_name_vec[i],sep=""), warn=FALSE, encoding = 'UTF-8')
-  truth <- c(truth, inputtxt)
-}
-#head(truth, 5)
-ground_truth_vec <- unlist(strsplit(tolower(truth), " "))
+#create a performance table
+OCR_performance_table <- data.frame("Tesseract" = rep(NA,4),
+                                    "Tesseract_with_postprocessing" = rep(NA,4))
+row.names(OCR_performance_table) <- c("word_wise_recall","word_wise_precision",
+                                      "character_wise_recall","character_wise_precision")
 
-#load("../output/predvalue.rda")
-#head(predvalue, 10)
+library(tidyr)
+#Collecting ground truth vector
+ground_truth_vec <- c()
+for(i in test.index){
+  inputtxt <- readLines(paste("../data/ground_truth/",file_name_vec[i],sep=""), warn=FALSE)
+  inputtxt1 <- unlist(strsplit(tolower(inputtxt), " "))
+  ground_truth_vec <- c(ground_truth_vec, inputtxt1)
+}
+ground_truth_vec <- unlist(strsplit(tolower(truth), " "))
 
 # Collecting tesseract vector
 tesseract_vec <- rownames(testset)
@@ -231,20 +244,28 @@ head(tesseract_vec, 10)
 load("../output/aftercorrection2.RData")
 aftercorrection_vec <- test_df_correct2[,2]
 
+#43023
 
-#replace those wrong words
-# length(rownames(datamatrix))
-# nrow(datamatrix)
-unique_error <- unique(dete_error)
-replace_before <- tolower(rownames(datamatrix))
-newdatamatrix <- datamatrix
-row.names(newdatamatrix) <- replace_before
+# Collecting tesseract vector
+# case 1
+tesseract_vec1 <- test_df_correct1[,1]
+tesseract_delete_error_vec1 <- test_df_correct1[,2]
 
-# Extract those words where we detect errors
-replace_after <- unlist(lapply(replace_before, function(x) replace_func(x)))
-correct_after_correction = lapply(1:100, function(x) new_correct_index(x)$total_correct_words)
-total_after_correction = lapply(1:100, function(x) new_correct_index(x)$total_words)
+old_intersect_vec1 <- vecsets::vintersect(tolower(ground_truth_vec), tolower(tesseract_vec1)) #607
+new_intersect_vec1 <- vecsets::vintersect(tolower(ground_truth_vec), tolower(tesseract_delete_error_vec1))
 
+OCR_performance_table["word_wise_recall","Tesseract"] <- length(old_intersect_vec1)/length(ground_truth_vec)
+OCR_performance_table["word_wise_precision","Tesseract"] <- length(old_intersect_vec1)/length(tesseract_vec1)
+OCR_performance_table["word_wise_recall","Tesseract_with_postprocessing"] <- length(new_intersect_vec1)/length(ground_truth_vec)
+OCR_performance_table["word_wise_precision","Tesseract_with_postprocessing"] <- length(new_intersect_vec1)/length(tesseract_delete_error_vec1)
+kable(OCR_performance_table, caption="Summary of OCR performance")
+
+
+# case 2
+tesseract_vec2 <- test_df_correct2[,1]
+tesseract_delete_error_vec2 <- test_df_correct2[,2]
+
+          
 ground_char_count <- NULL
 tess_char_count <- NULL
 corrected_char_count <- NULL
@@ -290,18 +311,6 @@ for (i in names(ground_char_count)) {
   tess_pre_char_correct <- tess_pre_char_correct + min(ground_char_count[i], tess_char_count[i])
   tess_post_char_correct <- tess_post_char_correct + min(ground_char_count[i], corrected_char_count[i])
 }
-
-
-OCR_performance_table <- data.frame("Tesseract" = rep(NA,4),
-                                    "Tesseract_with_postprocessing" = rep(NA,4))
-row.names(OCR_performance_table) <- c("word_wise_recall","word_wise_precision",
-                                      "character_wise_recall","character_wise_precision")
-
-# Word-wise recall & precision
-OCR_performance_table["word_wise_recall","Tesseract"] <- sum(datamatrix[,'ifwordcorrect'])/nrow(datamatrix)
-OCR_performance_table["word_wise_precision","Tesseract"] <- sum(datamatrix[,'ifwordcorrect'])/length(ground_truth_vec)
-OCR_performance_table["word_wise_recall","Tesseract_with_postprocessing"] <- sum(unlist(correct_after_correction))/sum(unlist(total_after_correction))
-OCR_performance_table["word_wise_precision","Tesseract_with_postprocessing"] <- sum(unlist(correct_after_correction))/length(ground_truth_vec)
 
 # Character-wise recall & precision
 OCR_performance_table["character_wise_recall","Tesseract"] <- tess_pre_char_correct / sum(ground_char_count)
