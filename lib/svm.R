@@ -1,7 +1,7 @@
 library(e1071)
 source('../lib/ifCleanToken.R')
 load('../output/bigram.RData')
-load('../output/datamatrix.RData')
+load('../output/datamatrix_new.RData')
 file_name_vec <- list.files("../data/ground_truth") #100 files in total
 #split the dataset into training and test data 
 set.seed(1)

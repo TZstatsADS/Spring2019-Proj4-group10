@@ -127,7 +127,8 @@ In this statercode, we implement the first three rules in the first paper -- rul
 ```{r}
 #see the svm.R
 #performance of SVM model
-load('../output/datamatrix.RData')
+load('../output/datamatrix_new.RData')
+load('../output/tes_split_list.RData')
 
 #test  (delete later)
 # for (p in 1:100){
@@ -228,7 +229,16 @@ for(i in test.index){
   inputtxt1 <- unlist(strsplit(tolower(inputtxt), " "))
   ground_truth_vec <- c(ground_truth_vec, inputtxt1)
 }
-ground_truth_vec <- unlist(strsplit(tolower(truth), " "))
+ground_truth_vec <- unlist(strsplit(tolower(ground_truth_vec), " "))
+
+
+for(i in test.index){
+  inputtxt <- readLines(paste("../data/tesseract/",file_name_vec[i],sep=""), warn=FALSE)
+  inputtxt1 <- unlist(strsplit(tolower(inputtxt), " "))
+  ground_truth_vec <- c(ground_truth_vec, inputtxt1)
+}
+ground_truth_vec <- unlist(strsplit(tolower(ground_truth_vec), " "))
+
 
 # Collecting tesseract vector
 tesseract_vec <- rownames(testset)
