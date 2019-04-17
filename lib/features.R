@@ -16,8 +16,8 @@ features <- function(word){
   word_lower <- tolower(strsplit(word, "")[[1]])
   vowels <- '[aeiou]'
   consonants <- '[bcdfghjklmnpqrstvxzwy]'
-  v <- str_count(word, vowels)
-  c <- str_count(word, consonants)
+  v <- sum(str_count(word_lower, vowels))
+  c <- sum(str_count(word_lower, consonants))
   q1 <- v / l
   q2 <- c / l
   q3 <- ifelse(c != 0, v/c, 2*l)
