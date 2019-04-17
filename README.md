@@ -10,9 +10,9 @@ Term: Spring 2019
 + Team members
 	+ Xiaoxi Zhao xz2740
 	+ Seungwook Han sh3264
-	+ team member 3
-	+ team member 4
-	+ team member 5
+	+ Hongye Jiang hj2493
+	+ Xinzhu Wang xw2581
+	+ Jingyue Li jl5283
 
 + Project summary: In this project, we created an OCR post-processing procedure to enhance Tesseract OCR output. Our work is based on two parts: detection and correction.We implemented the methods listed in D3 and C1. We first extract 12 features from the text and use svm with RBF Kernel to train the model and predict which one is the error word(garbage). Then we realised the correction methods in C1. The C1 paper presents an error correction method for the case in which a word has 1 error -- using digram features. However, we extended the error correction method further by implementing an error correction method for the case in which a word has 2 errors. Finally we report our test confusion matrix.
 	
@@ -20,6 +20,7 @@ Term: Spring 2019
 
     + Xiaoxi Zhao: generate features 4-9, implemented svm model with parameter tunning, implemented the correction part to fit in the main project, concatenated the correction result with non-error words to perform evaluation part
     + Seungwook Han: Generated features 1-3, most frequent symbol feature, non-alphabetical symbols feature, brainstormed and outlined our error detection and correction pipeline with splitting of data, implemented character-wise evaluation metrics, described our implementation details for the project in main.Rmd
+    + Hongye Jiang: Genarated the features including bigram, Most frequent symbol, and Non-alphabetical symbols. Wrote an algorithm to determine if each word in OCR output is correct. Combined all these features and if-correct result together into one function for implementing SVM. Implemented word-wise evaluation metrics. Connected each part of this project, added comments and reran the whole project. Prepared for the presentation. 
 
 Following [suggestions](http://nicercode.github.io/blog/2013-04-05-projects/) by [RICH FITZJOHN](http://nicercode.github.io/about/#Team) (@richfitz). This folder is orgarnized as follows.
 
