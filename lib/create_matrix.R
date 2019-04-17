@@ -87,4 +87,9 @@ for(j in c(1:length(file_name_vec))){
   
 }
 
+# for (p in 1:100){
+#   print(p)
+#   print(row.names(datamatrix[datamatrix[,'j']==p,])[1:3])
+# }
+
 save(datamatrix, file = '../output/datamatrix.RData')
